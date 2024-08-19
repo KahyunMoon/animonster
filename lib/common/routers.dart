@@ -4,7 +4,7 @@ import 'package:animonster/presentation/pages/splash/splash.dart';
 import 'package:go_router/go_router.dart';
 
 final routers = GoRouter(
-  initialLocation: '/splash',
+  initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/splash',

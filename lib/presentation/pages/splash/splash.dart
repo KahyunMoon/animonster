@@ -18,7 +18,7 @@ class _SplashState extends State<Splash> {
 
   _navigateToHome() async {
     await Future.delayed(const Duration(seconds: 3), () {
-      context.goNamed('logIn');
+      context.goNamed('home');
     });
   }
 
