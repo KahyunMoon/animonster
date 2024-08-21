@@ -1,4 +1,6 @@
+import 'package:animonster/common/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,11 +11,157 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _firstTargetKey = GlobalKey(); // 사전예약
+  final GlobalKey _secondTargetKey = GlobalKey(); // 소개
+  final GlobalKey _thirdTargetKey = GlobalKey(); // 특징
+  final GlobalKey _fourthTargetKey = GlobalKey(); // 이벤트(연결안됨)
+  final GlobalKey buttonKey = GlobalKey(); // 사전예약버튼
+  OverlayEntry? overlayEntry;
+
+  void _showOrRemoveModal(BuildContext context, GlobalKey key) {
+    _scrollToTarget(_firstTargetKey);
+    if (overlayEntry != null) {
+      overlayEntry?.remove();
+      overlayEntry = null;
+      return;
+    }
+
+    final renderBox = key.currentContext!.findRenderObject() as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: position.dy + size.height + 10,
+        left: position.dx / 2.5,
+        width: size.width * 2,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Image.asset('assets/images/image-5-150x150.png'),
+                  ),
+                  const SizedBox(height: 30),
+                  const Text(
+                    '이름',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(height: 5),
+                  const SizedBox(
+                    width: double.maxFinite,
+                    height: 45,
+                    child: TextField(
+                      textAlign: TextAlign.left,
+                      textAlignVertical: TextAlignVertical.bottom,
+                      decoration: InputDecoration(
+                        hintText: '이름을 입력해 주세요.',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    '전화번호',
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  const SizedBox(height: 5),
+                  SizedBox(
+                    width: double.maxFinite,
+                    height: 45,
+                    child: TextField(
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      textAlign: TextAlign.left,
+                      textAlignVertical: TextAlignVertical.bottom,
+                      decoration: const InputDecoration(
+                        hintText: '전화번호를 입력해 주세요.',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      overlayEntry?.remove();
+                      overlayEntry = null;
+                      print('사전 예약 완료');
+                    },
+                    child: Center(
+                      child: Container(
+                        width: double.maxFinite,
+                        height: 50,
+                        decoration:
+                            const BoxDecoration(color: Colors.deepPurpleAccent),
+                        child: const Center(
+                          child: Text(
+                            '사전 예약 하기',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(overlayEntry!);
+  }
+
+  final List<String> _menu = ['사전 예약', '소개', '특징', '이벤트'];
+  String? selectedMenu;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _scrollToTop() {
     setState(() {
       _scrollController.jumpTo(0);
     });
+  }
+
+  void _scrollToTarget(GlobalKey key) {
+    final context = key.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(context);
+    }
   }
 
   @override
@@ -44,7 +192,66 @@ class _HomePageState extends State<HomePage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      //! dropdown 만들기
+                      if (overlayEntry != null) {
+                        return;
+                      }
+
+                      final overlay = Overlay.of(context);
+                      overlayEntry = OverlayEntry(
+                        builder: (context) => GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            overlayEntry?.remove();
+                            overlayEntry = null;
+                          },
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                top: 140,
+                                left: 0,
+                                right: 0,
+                                child: Material(
+                                  elevation: 4.0,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children:
+                                        _menu.asMap().entries.map((entry) {
+                                      int idx = entry.key;
+                                      String value = entry.value;
+
+                                      GlobalKey targetKey;
+                                      if (idx == 0) {
+                                        targetKey = _firstTargetKey;
+                                      } else if (idx == 1) {
+                                        targetKey = _secondTargetKey;
+                                      } else if (idx == 2) {
+                                        targetKey = _thirdTargetKey;
+                                      } else {
+                                        targetKey = _fourthTargetKey;
+                                      }
+
+                                      return ListTile(
+                                        title: Text(value),
+                                        onTap: () {
+                                          setState(() {
+                                            selectedMenu = value;
+                                            _scrollToTarget(targetKey);
+                                          });
+
+                                          overlayEntry?.remove();
+                                          overlayEntry = null;
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+
+                      overlay.insert(overlayEntry!);
                     },
                     child: const Icon(Icons.menu),
                   ),
@@ -85,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                           child: Text(
                             '멋진 라노베 완성!',
                             style: TextStyle(
-                                color: Colors.blueAccent,
+                                color: Colors.lightBlueAccent,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold),
                           ),
@@ -117,31 +324,38 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        Container(
-                          width: 150,
-                          height: 60,
-                          decoration: const BoxDecoration(
-                              color: Colors.deepPurpleAccent,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(15))),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.menu,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                '사전예약하기',
-                                style: TextStyle(
+                        GestureDetector(
+                          key: buttonKey,
+                          onTap: () {
+                            _showOrRemoveModal(context, buttonKey);
+                          },
+                          child: Container(
+                            key: _firstTargetKey,
+                            width: 150,
+                            height: 60,
+                            decoration: const BoxDecoration(
+                                color: Colors.deepPurpleAccent,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(15))),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.menu,
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  size: 16,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 10),
+                                Text(
+                                  '사전예약하기',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(
@@ -201,10 +415,13 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 10),
                         Container(
                           width: double.maxFinite,
-                          decoration: const BoxDecoration(color: Colors.grey),
+                          decoration: BoxDecoration(
+                            color: AppColors.lightGrayColors[0],
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Column(
+                              key: _secondTargetKey,
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -241,7 +458,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Icon(
                                       Icons.double_arrow,
-                                      color: Colors.blue,
+                                      color: Colors.blueAccent,
                                     ),
                                     SizedBox(width: 10),
                                     Expanded(
@@ -255,7 +472,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Icon(
                                       Icons.double_arrow,
-                                      color: Colors.blue,
+                                      color: Colors.blueAccent,
                                     ),
                                     SizedBox(width: 10),
                                     Expanded(
@@ -269,7 +486,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Icon(
                                       Icons.double_arrow,
-                                      color: Colors.blue,
+                                      color: Colors.blueAccent,
                                     ),
                                     SizedBox(width: 10),
                                     Expanded(
@@ -283,7 +500,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Icon(
                                       Icons.double_arrow,
-                                      color: Colors.blue,
+                                      color: Colors.blueAccent,
                                     ),
                                     SizedBox(width: 10),
                                     Expanded(
@@ -304,6 +521,7 @@ class _HomePageState extends State<HomePage> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             child: Column(
+                              key: _thirdTargetKey,
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -334,45 +552,45 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 const SizedBox(height: 20),
                                 //! 걍 컬럼으로 묶어 아님 Text만 바꾸던지
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.check_circle,
-                                      color: Colors.blue,
+                                      color: AppColors.blueColors[0],
                                     ),
-                                    SizedBox(width: 10),
-                                    Expanded(
+                                    const SizedBox(width: 10),
+                                    const Expanded(
                                       child: Text('다양한 설정의 롤플레이 시나리오 제공'),
                                     ),
                                   ],
                                 ),
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.check_circle,
-                                      color: Colors.blue,
+                                      color: AppColors.blueColors[0],
                                     ),
-                                    SizedBox(width: 10),
-                                    Expanded(
+                                    const SizedBox(width: 10),
+                                    const Expanded(
                                       child:
                                           Text('롤플레이를 즐기면서 내 캐릭터 능력치도 업! 업!'),
                                     ),
                                   ],
                                 ),
-                                const Row(
+                                Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.check_circle,
-                                      color: Colors.blue,
+                                      color: AppColors.blueColors[0],
                                     ),
-                                    SizedBox(width: 10),
-                                    Expanded(
+                                    const SizedBox(width: 10),
+                                    const Expanded(
                                       child:
                                           Text('원작 캐릭터 보다 더 매력적인 나만의 캐릭터 육성'),
                                     ),
@@ -389,11 +607,11 @@ class _HomePageState extends State<HomePage> {
                               Image.asset('assets/images/INFO_-655x1024.png'),
                         ),
                         Container(
-                          color: Colors.grey,
+                          color: AppColors.lightGrayColors[0],
                           child: Image.asset('assets/images/image-14.png'),
                         ),
                         Container(
-                          color: Colors.grey,
+                          color: AppColors.lightGrayColors[0],
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Column(
