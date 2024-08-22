@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         top: position.dy + size.height + 10,
-        left: position.dx / 2.5,
+        left: position.dx - size.width / 2,
         width: size.width * 2,
         child: Material(
           color: Colors.transparent,
@@ -263,6 +263,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    bool screenSize = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -274,6 +275,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(
                     width: 120,
@@ -281,10 +283,55 @@ class _HomePageState extends State<HomePage> {
                     child: Image.asset('assets/icons/Logo_EN.png',
                         fit: BoxFit.fill),
                   ),
-                  GestureDetector(
-                    onTap: _showMenu,
-                    child: const Icon(Icons.menu),
-                  ),
+                  screenSize
+                      ? const SizedBox()
+                      : SizedBox(
+                          width: 300,
+                          height: 25,
+                          child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    GlobalKey targetKey = _getTargetKey(index);
+
+                                    setState(() {
+                                      selectedMenu = _menu[index];
+
+                                      _scrollToTarget(targetKey);
+                                    });
+                                  },
+                                  child: Text(
+                                    _menu[index],
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(width: 15),
+                              itemCount: _menu.length),
+                        ),
+                  screenSize
+                      ? GestureDetector(
+                          onTap: _showMenu,
+                          child: const Icon(Icons.menu),
+                        )
+                      : Container(
+                          width: 200,
+                          height: 40,
+                          decoration: const BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                              color: Colors.blue),
+                          child: const Center(
+                            child: Text(
+                              '궁금한 점 물어보기',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        )
                 ],
               ),
             ),
@@ -307,31 +354,34 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(
                           height: 20,
                         ),
-                        const SizedBox(
-                          height: 30,
+                        SizedBox(
+                          height: screenSize ? 30 : 50,
                           child: Text(
                             '최애 캐릭터와 채팅만 해도,',
                             style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 20,
+                                fontSize: screenSize ? 20 : 40,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
-                        const SizedBox(
-                          height: 40,
+                        SizedBox(
+                          height: screenSize ? 30 : 50,
                           child: Text(
                             '멋진 라노베 완성!',
                             style: TextStyle(
                                 color: Colors.lightBlueAccent,
-                                fontSize: 20,
+                                fontSize: screenSize ? 20 : 40,
                                 fontWeight: FontWeight.bold),
                           ),
                         ),
                         const SizedBox(
                           child: Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text(
-                                '내가 좋아하는 캐릭터를 모으고, 캐릭터와 롤플레이/채팅을 하면, Ai가 알아서 작품을 만들어 줍니다. 시나리오 생성, 맥락 설정, 문장 다듬기가 자동으로 진행되어, 누구나 쉽게 고급 글쓰기가 가능합니다. 또한, 완성된 스토리에 맞는 웹툰 이미지를 Ai가 자동으로 생성하여 나만의 웹툰을 완성 할 수 있습니다. 누구나 웹 소설, 웹툰 작가가 되어 수익을 창출 할 수 있습니다.'),
+                            padding: EdgeInsets.all(20),
+                            child: SizedBox(
+                              width: 700,
+                              child: Text(
+                                  '내가 좋아하는 캐릭터를 모으고, 캐릭터와 롤플레이/채팅을 하면, Ai가 알아서 작품을 만들어 줍니다. 시나리오 생성, 맥락 설정, 문장 다듬기가 자동으로 진행되어, 누구나 쉽게 고급 글쓰기가 가능합니다. 또한, 완성된 스토리에 맞는 웹툰 이미지를 Ai가 자동으로 생성하여 나만의 웹툰을 완성 할 수 있습니다. 누구나 웹 소설, 웹툰 작가가 되어 수익을 창출 할 수 있습니다.'),
+                            ),
                           ),
                         ),
                         Row(
@@ -450,43 +500,79 @@ class _HomePageState extends State<HomePage> {
                           ),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Column(
-                              key: _secondTargetKey,
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 30),
-                                const Text(
-                                  '최애 캐릭터와 채팅을 시작하세요.',
-                                  style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold),
+                                Expanded(
+                                  child: Column(
+                                    key: _secondTargetKey,
+                                    mainAxisAlignment: screenSize
+                                        ? MainAxisAlignment.start
+                                        : MainAxisAlignment.end,
+                                    crossAxisAlignment: screenSize
+                                        ? CrossAxisAlignment.start
+                                        : CrossAxisAlignment.end,
+                                    children: [
+                                      const SizedBox(height: 30),
+                                      SizedBox(
+                                        width: 300,
+                                        child: Text(
+                                          '최애 캐릭터와 채팅을 시작하세요.',
+                                          style: TextStyle(
+                                              fontSize: screenSize ? 25 : 35,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment: screenSize
+                                            ? MainAxisAlignment.start
+                                            : MainAxisAlignment.end,
+                                        crossAxisAlignment: screenSize
+                                            ? CrossAxisAlignment.start
+                                            : CrossAxisAlignment.end,
+                                        children: [
+                                          Container(
+                                            width: 3,
+                                            height: 100,
+                                            decoration: const BoxDecoration(
+                                                color: Colors.blue),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          const SizedBox(
+                                            width: 280,
+                                            child: Text(
+                                                '다양한 롤플레이 설정이 제공되어 상황을 선택하고 캐릭터와 채팅을 즐기면, Ai로직에 의해 시나리오가 자동으로 생성 됩니다. 서로 다른 캐릭터를 등장 시킬 수도 있고, 여러가지 시나리오를 요약하여 믹스 할 수도 있습니다.'),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 10),
+                                        child: IconAndText(
+                                          type: 'intro',
+                                          text: intro,
+                                          itemCount: intro.length,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 3,
-                                      height: 100,
-                                      decoration: const BoxDecoration(
-                                          color: Colors.blue),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child: Text(
-                                          '다양한 롤플레이 설정이 제공되어 상황을 선택하고 캐릭터와 채팅을 즐기면, Ai로직에 의해 시나리오가 자동으로 생성 됩니다. 서로 다른 캐릭터를 등장 시킬 수도 있고, 여러가지 시나리오를 요약하여 믹스 할 수도 있습니다.'),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                IconAndText(
-                                  type: 'intro',
-                                  text: intro,
-                                  itemCount: intro.length,
-                                ),
-                                const SizedBox(height: 20),
+                                screenSize
+                                    ? const SizedBox()
+                                    : Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            height: 500,
+                                            child: Image.asset(
+                                                'assets/images/appChat_iPhone-768x720.png'),
+                                          ),
+                                        ),
+                                      ),
                               ],
                             ),
                           ),
@@ -495,43 +581,68 @@ class _HomePageState extends State<HomePage> {
                           width: double.maxFinite,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Column(
-                              key: _thirdTargetKey,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const SizedBox(height: 30),
-                                const Text(
-                                  '내가 찾던 그 스토리!! 아이디어 고민 끝!',
-                                  style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold),
+                                screenSize
+                                    ? const SizedBox()
+                                    : Expanded(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: SizedBox(
+                                            height: 500,
+                                            child: Image.asset(
+                                                'assets/images/iMockup-Google-Pixel-8-Pro-1-972x1024.png'),
+                                          ),
+                                        ),
+                                      ),
+                                Expanded(
+                                  child: Column(
+                                    key: _thirdTargetKey,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 30),
+                                      Text(
+                                        '내가 찾던 그 스토리!! 아이디어 고민 끝!',
+                                        style: TextStyle(
+                                            fontSize: screenSize ? 25 : 35,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment: screenSize
+                                            ? CrossAxisAlignment.start
+                                            : CrossAxisAlignment.center,
+                                        children: [
+                                          Container(
+                                            width: 3,
+                                            height: 100,
+                                            decoration: const BoxDecoration(
+                                                color: Colors.blue),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          const SizedBox(
+                                            width: 300,
+                                            child: Text(
+                                                '기발하고 재미 있는 설정의 상황극이 미리 준비되어 있어, 단편 글쓰기에 최적화 되어 있습니다. 또한, 장편을 위한 맥락 유지 및 다양한 극적 요소를 Ai가 알아서 정리해줍니다. 이제 창작자님은 아이디어를 정리하고 상상한 것을 작품으로 만들기만 하세요.'),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 20),
+                                      IconAndText(
+                                        type: 'point',
+                                        text: point,
+                                        itemCount: point.length,
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
                                 ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      width: 3,
-                                      height: 85,
-                                      decoration: const BoxDecoration(
-                                          color: Colors.blue),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child: Text(
-                                          '기발하고 재미 있는 설정의 상황극이 미리 준비되어 있어, 단편 글쓰기에 최적화 되어 있습니다. 또한, 장편을 위한 맥락 유지 및 다양한 극적 요소를 Ai가 알아서 정리해줍니다. 이제 창작자님은 아이디어를 정리하고 상상한 것을 작품으로 만들기만 하세요.'),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 20),
-                                IconAndText(
-                                  type: 'point',
-                                  text: point,
-                                  itemCount: point.length,
-                                ),
-                                const SizedBox(height: 10),
                               ],
                             ),
                           ),
@@ -541,36 +652,102 @@ class _HomePageState extends State<HomePage> {
                           child:
                               Image.asset('assets/images/INFO_-655x1024.png'),
                         ),
-                        Container(
-                          color: AppColors.lightGrayColors[0],
-                          child: Image.asset('assets/images/image-14.png'),
-                        ),
+                        screenSize
+                            ? Container(
+                                color: AppColors.lightGrayColors[0],
+                                child:
+                                    Image.asset('assets/images/image-14.png'),
+                              )
+                            : const SizedBox(),
                         Container(
                           color: AppColors.lightGrayColors[0],
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 30),
-                                const Text(
-                                  '애니몬스터가 곧 여러분 곁으로 찾아옵니다.',
-                                  style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  '애니몬스터는 창작자와 2차 창작물을 사랑하는 모든 매니아분들을 위해 최고의 앱으로 찾아뵐 것을 약속드립니다. 우리가 상상하고 우리가 좋아하는 모든 것들을 우리의 손 안에 움켜쥘 수 있기를 바랍니다.',
-                                ),
-                                const SizedBox(height: 20),
-                                Image.asset('assets/images/Google-Play.png'),
-                                const SizedBox(height: 20),
-                                Image.asset('assets/images/App-Store.png'),
-                                const SizedBox(height: 40),
-                              ],
-                            ),
+                            child: screenSize
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 30),
+                                      const Text(
+                                        '애니몬스터가 곧 여러분 곁으로 찾아옵니다.',
+                                        style: TextStyle(
+                                            fontSize: 25,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 10),
+                                      const Text(
+                                        '애니몬스터는 창작자와 2차 창작물을 사랑하는 모든 매니아분들을 위해 최고의 앱으로 찾아뵐 것을 약속드립니다. 우리가 상상하고 우리가 좋아하는 모든 것들을 우리의 손 안에 움켜쥘 수 있기를 바랍니다.',
+                                      ),
+                                      const SizedBox(height: 20),
+                                      Image.asset(
+                                          'assets/images/Google-Play.png'),
+                                      const SizedBox(height: 20),
+                                      Image.asset(
+                                          'assets/images/App-Store.png'),
+                                      const SizedBox(height: 40),
+                                    ],
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        color: AppColors.lightGrayColors[0],
+                                        height: 350,
+                                        child: Image.asset(
+                                            'assets/images/image-14.png'),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 20),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(
+                                              width: 350,
+                                              child: Text(
+                                                '애니몬스터가 곧 여러분 곁으로 찾아옵니다.',
+                                                style: TextStyle(
+                                                    fontSize: 35,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            const SizedBox(
+                                              width: 350,
+                                              child: Text(
+                                                '애니몬스터는 창작자와 2차 창작물을 사랑하는 모든 매니아분들을 위해 최고의 앱으로 찾아뵐 것을 약속드립니다. 우리가 상상하고 우리가 좋아하는 모든 것들을 우리의 손 안에 움켜쥘 수 있기를 바랍니다.',
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            Row(
+                                              children: [
+                                                SizedBox(
+                                                  height: 50,
+                                                  child: Image.asset(
+                                                      'assets/images/Google-Play.png'),
+                                                ),
+                                                const SizedBox(width: 20),
+                                                SizedBox(
+                                                  height: 50,
+                                                  child: Image.asset(
+                                                      'assets/images/App-Store.png'),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                    ],
+                                  ),
                           ),
                         ),
                         Container(
@@ -590,8 +767,7 @@ class _HomePageState extends State<HomePage> {
                                       text: 'BmineAI',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontWeight: FontWeight
-                                            .bold, // BmineAI 부분에 bold 적용
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     TextSpan(

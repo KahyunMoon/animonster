@@ -16,6 +16,7 @@ class IconAndText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: 280,
       height: 100,
       child: ListView.separated(
         itemCount: itemCount,
@@ -24,10 +25,9 @@ class IconAndText extends StatelessWidget {
         },
         itemBuilder: (context, index) {
           return SizedBox(
-            width: double.maxFinite,
             height: 20,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Icon(
