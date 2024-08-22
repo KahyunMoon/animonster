@@ -1,4 +1,5 @@
 import 'package:animonster/common/styles.dart';
+import 'package:animonster/presentation/pages/home/widgets/icon_and_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -17,6 +18,21 @@ class _HomePageState extends State<HomePage> {
   final GlobalKey _fourthTargetKey = GlobalKey(); // 이벤트(연결안됨)
   final GlobalKey buttonKey = GlobalKey(); // 사전예약버튼
   OverlayEntry? overlayEntry;
+
+  // 소개 //
+  List<String> intro = [
+    '다양하게 준비 되어 있는 캐릭터와 리소스',
+    '리소스에서 원하는 장면과 상황을 선택',
+    '개성있는 대화를 통해 시나리오 만들기',
+    '장면과 장면을 이어 붙혀 최종 작품 완성'
+  ];
+
+  // 특징 //
+  List<String> point = [
+    '다양한 설정의 롤플레이 시나리오 제공',
+    '롤플레이를 즐기면서 내 캐릭터 능력치도 업! 업!',
+    '원작 캐릭터 보다 더 매력적인 나만의 캐릭터 육성'
+  ];
 
   void _showOrRemoveModal(BuildContext context, GlobalKey key) {
     _scrollToTarget(_firstTargetKey);
@@ -164,6 +180,81 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _showMenu() {
+    if (overlayEntry != null) {
+      return;
+    }
+
+    final overlay = Overlay.of(context);
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _removeOverlay,
+        child: _buildMenuOverlay(),
+      ),
+    );
+
+    overlay.insert(overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    overlayEntry?.remove();
+    overlayEntry = null;
+  }
+
+  Widget _buildMenuOverlay() {
+    return Stack(
+      children: [
+        Positioned(
+          top: 140,
+          left: 0,
+          right: 0,
+          child: Material(
+            elevation: 4.0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _buildMenuItems(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildMenuItems() {
+    return _menu.asMap().entries.map((entry) {
+      int idx = entry.key;
+      String value = entry.value;
+
+      GlobalKey targetKey = _getTargetKey(idx);
+
+      return ListTile(
+        title: Text(value),
+        onTap: () {
+          setState(() {
+            selectedMenu = value;
+            _scrollToTarget(targetKey);
+          });
+          _removeOverlay();
+        },
+      );
+    }).toList();
+  }
+
+  GlobalKey _getTargetKey(int index) {
+    switch (index) {
+      case 0:
+        return _firstTargetKey;
+      case 1:
+        return _secondTargetKey;
+      case 2:
+        return _thirdTargetKey;
+      default:
+        return _fourthTargetKey;
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -191,68 +282,7 @@ class _HomePageState extends State<HomePage> {
                         fit: BoxFit.fill),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      if (overlayEntry != null) {
-                        return;
-                      }
-
-                      final overlay = Overlay.of(context);
-                      overlayEntry = OverlayEntry(
-                        builder: (context) => GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            overlayEntry?.remove();
-                            overlayEntry = null;
-                          },
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                top: 140,
-                                left: 0,
-                                right: 0,
-                                child: Material(
-                                  elevation: 4.0,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children:
-                                        _menu.asMap().entries.map((entry) {
-                                      int idx = entry.key;
-                                      String value = entry.value;
-
-                                      GlobalKey targetKey;
-                                      if (idx == 0) {
-                                        targetKey = _firstTargetKey;
-                                      } else if (idx == 1) {
-                                        targetKey = _secondTargetKey;
-                                      } else if (idx == 2) {
-                                        targetKey = _thirdTargetKey;
-                                      } else {
-                                        targetKey = _fourthTargetKey;
-                                      }
-
-                                      return ListTile(
-                                        title: Text(value),
-                                        onTap: () {
-                                          setState(() {
-                                            selectedMenu = value;
-                                            _scrollToTarget(targetKey);
-                                          });
-
-                                          overlayEntry?.remove();
-                                          overlayEntry = null;
-                                        },
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-
-                      overlay.insert(overlayEntry!);
-                    },
+                    onTap: _showMenu,
                     child: const Icon(Icons.menu),
                   ),
                 ],
@@ -439,7 +469,7 @@ class _HomePageState extends State<HomePage> {
                                   children: [
                                     Container(
                                       width: 3,
-                                      height: 85,
+                                      height: 100,
                                       decoration: const BoxDecoration(
                                           color: Colors.blue),
                                     ),
@@ -451,70 +481,15 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
-                                //! 걍 컬럼으로 묶어 아님 Text만 바꾸던지
-                                const Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.double_arrow,
-                                      color: Colors.blueAccent,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text('다양하게 준비 되어 있는 캐릭터와 리소스'),
-                                    ),
-                                  ],
+                                IconAndText(
+                                  type: 'intro',
+                                  text: intro,
+                                  itemCount: intro.length,
                                 ),
-                                const Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.double_arrow,
-                                      color: Colors.blueAccent,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text('리소스에서 원하는 장면과 상황을 선택'),
-                                    ),
-                                  ],
-                                ),
-                                const Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.double_arrow,
-                                      color: Colors.blueAccent,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text('개성있는 대화를 통해 시나리오 만들기'),
-                                    ),
-                                  ],
-                                ),
-                                const Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.double_arrow,
-                                      color: Colors.blueAccent,
-                                    ),
-                                    SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text('장면과 장면을 이어 붙혀 최종 작품 완성'),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 40),
+                                const SizedBox(height: 20),
                               ],
                             ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: 50,
                         ),
                         SizedBox(
                           width: double.maxFinite,
@@ -551,50 +526,10 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
-                                //! 걍 컬럼으로 묶어 아님 Text만 바꾸던지
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: AppColors.blueColors[0],
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child: Text('다양한 설정의 롤플레이 시나리오 제공'),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: AppColors.blueColors[0],
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child:
-                                          Text('롤플레이를 즐기면서 내 캐릭터 능력치도 업! 업!'),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: AppColors.blueColors[0],
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Expanded(
-                                      child:
-                                          Text('원작 캐릭터 보다 더 매력적인 나만의 캐릭터 육성'),
-                                    ),
-                                  ],
+                                IconAndText(
+                                  type: 'point',
+                                  text: point,
+                                  itemCount: point.length,
                                 ),
                                 const SizedBox(height: 10),
                               ],
