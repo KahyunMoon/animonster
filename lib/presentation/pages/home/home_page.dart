@@ -520,7 +520,7 @@ class _HomePageState extends State<HomePage> {
                                         child: Text(
                                           '최애 캐릭터와 채팅을 시작하세요.',
                                           style: TextStyle(
-                                              fontSize: screenSize ? 25 : 35,
+                                              fontSize: screenSize ? 20 : 35,
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
@@ -608,7 +608,7 @@ class _HomePageState extends State<HomePage> {
                                       Text(
                                         '내가 찾던 그 스토리!! 아이디어 고민 끝!',
                                         style: TextStyle(
-                                            fontSize: screenSize ? 25 : 35,
+                                            fontSize: screenSize ? 20 : 35,
                                             fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 20),
@@ -673,7 +673,7 @@ class _HomePageState extends State<HomePage> {
                                       const Text(
                                         '애니몬스터가 곧 여러분 곁으로 찾아옵니다.',
                                         style: TextStyle(
-                                            fontSize: 25,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.bold),
                                       ),
                                       const SizedBox(height: 10),
